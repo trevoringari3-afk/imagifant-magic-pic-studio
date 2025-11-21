@@ -8,6 +8,45 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
+    --background: 0 0% 100%;
+    --foreground: 240 10% 3.9%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 240 10% 3.9%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 10% 3.9%;
+
+    --primary: 263 70% 50%;
+    --primary-foreground: 0 0% 98%;
+    --primary-glow: 263 85% 70%;
+
+    --secondary: 180 100% 50%;
+    --secondary-foreground: 0 0% 98%;
+    --secondary-glow: 180 100% 70%;
+
+    --muted: 240 5% 96%;
+    --muted-foreground: 240 3.8% 46.1%;
+
+    --accent: 263 70% 50%;
+    --accent-foreground: 0 0% 98%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 240 5.9% 90%;
+    --input: 240 5.9% 90%;
+    --ring: 263 70% 50%;
+
+    --radius: 0.75rem;
+
+    --gradient-primary: linear-gradient(135deg, hsl(263 70% 50%), hsl(180 100% 50%));
+    --gradient-glow: radial-gradient(circle at 50% 0%, hsl(263 70% 50% / 0.1), transparent 50%);
+    --shadow-neon: 0 0 20px hsl(263 70% 50% / 0.3), 0 0 40px hsl(263 70% 50% / 0.2);
+    --shadow-neon-cyan: 0 0 20px hsl(180 100% 50% / 0.3), 0 0 40px hsl(180 100% 50% / 0.2);
+  }
+
+  .dark {
     --background: 240 10% 3.9%;
     --foreground: 0 0% 98%;
 
@@ -38,8 +77,6 @@ All colors MUST be HSL.
     --input: 240 10% 15%;
     --ring: 263 70% 50%;
 
-    --radius: 0.75rem;
-
     --gradient-primary: linear-gradient(135deg, hsl(263 70% 50%), hsl(180 100% 50%));
     --gradient-glow: radial-gradient(circle at 50% 0%, hsl(263 70% 50% / 0.3), transparent 50%);
     --shadow-neon: 0 0 20px hsl(263 70% 50% / 0.5), 0 0 40px hsl(263 70% 50% / 0.3);
@@ -54,6 +91,10 @@ All colors MUST be HSL.
 
   body {
     @apply bg-background text-foreground;
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+
+  body.dark {
     background-image: 
       radial-gradient(circle at 20% 20%, hsl(263 70% 50% / 0.05) 0%, transparent 50%),
       radial-gradient(circle at 80% 80%, hsl(180 100% 50% / 0.05) 0%, transparent 50%);

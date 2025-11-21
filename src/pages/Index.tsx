@@ -32,7 +32,7 @@ const Index = () => {
             
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
               Create stunning AI-generated images with simple text prompts. 
-              Experience the future of digital creativity with NeuralForge.
+              Experience the future of digital creativity with imagifant.
             </p>
             
             <div className="flex gap-4 justify-center pt-4">
