@@ -127,4 +127,19 @@ All colors MUST be HSL.
     box-shadow: 0 0 30px hsl(263 70% 50% / 0.6), 0 0 60px hsl(263 70% 50% / 0.4);
     transform: translateY(-2px);
   }
+
+  .style-preset-card {
+    transition: all 0.3s ease;
+    cursor: pointer;
+  }
+
+  .style-preset-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px hsl(var(--primary) / 0.3);
+  }
+
+  .style-preset-card.selected {
+    border-color: hsl(var(--primary));
+    box-shadow: 0 0 20px hsl(var(--primary) / 0.4);
+  }
 }

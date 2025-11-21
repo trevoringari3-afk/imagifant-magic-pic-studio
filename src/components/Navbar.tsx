@@ -1,23 +1,30 @@
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { supabase } from "@/integrations/supabase/client";
-import { useEffect, useState } from "react";
-import { User } from "@supabase/supabase-js";
-import { Sparkles, LogOut, Moon, Sun } from "lucide-react";
+import { Sparkles, Moon, Sun, User, Image, LogOut } from "lucide-react";
 import { useTheme } from "next-themes";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+import { useEffect, useState } from "react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
-const Navbar = () => {
-  const navigate = useNavigate();
-  const [user, setUser] = useState<User | null>(null);
+export const Navbar = () => {
   const { theme, setTheme } = useTheme();
+  const navigate = useNavigate();
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null);
+      setIsAuthenticated(!!session);
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
+      setIsAuthenticated(!!session);
     });
 
     return () => subscription.unsubscribe();
@@ -25,6 +32,7 @@ const Navbar = () => {
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
+    toast.success("Signed out successfully");
     navigate("/");
   };
 
@@ -44,35 +52,46 @@ const Navbar = () => {
               variant="ghost"
               size="icon"
               onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-              className="text-foreground hover:text-primary"
+              className="rounded-full"
             >
-              {theme === "dark" ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+              {theme === "dark" ? (
+                <Sun className="h-5 w-5" />
+              ) : (
+                <Moon className="h-5 w-5" />
+              )}
             </Button>
-            {user ? (
-              <>
-                <Button
-                  variant="ghost"
-                  onClick={() => navigate("/generate")}
-                  className="text-foreground hover:text-primary"
-                >
-                  Generate
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={handleSignOut}
-                  className="border-primary/30 hover:border-primary"
-                >
-                  <LogOut className="w-4 h-4 mr-2" />
-                  Sign Out
-                </Button>
-              </>
+
+            {isAuthenticated ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon" className="rounded-full">
+                    <User className="h-5 w-5" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-48">
+                  <DropdownMenuItem onClick={() => navigate("/generate")}>
+                    <Sparkles className="mr-2 h-4 w-4" />
+                    Generate
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate("/gallery")}>
+                    <Image className="mr-2 h-4 w-4" />
+                    Gallery
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate("/profile")}>
+                    <User className="mr-2 h-4 w-4" />
+                    Profile
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleSignOut}>
+                    <LogOut className="mr-2 h-4 w-4" />
+                    Sign Out
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             ) : (
-              <Button
-                onClick={() => navigate("/auth")}
-                className="glow-button bg-primary hover:bg-primary/90"
-              >
-                Get Started
-              </Button>
+              <Link to="/auth">
+                <Button className="glow-button">Get Started</Button>
+              </Link>
             )}
           </div>
         </div>
