@@ -57,20 +57,20 @@ const Auth = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-6">
+    <div className="min-h-screen flex items-center justify-center p-4 sm:p-6">
       <div className="absolute inset-0 grid-pattern opacity-20" />
       
       <Card className="w-full max-w-md glass-card border-primary/30 relative z-10">
         <CardHeader className="space-y-3 text-center">
           <div className="flex justify-center">
-            <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center">
-              <Sparkles className="w-8 h-8 text-primary animate-glow-pulse" />
+            <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-primary/10 flex items-center justify-center">
+              <Sparkles className="w-7 h-7 sm:w-8 sm:h-8 text-primary animate-glow-pulse" />
             </div>
           </div>
-          <CardTitle className="text-3xl font-bold">
+          <CardTitle className="text-2xl sm:text-3xl font-bold">
             {isLogin ? "Welcome Back" : "Join imagifant"}
           </CardTitle>
-          <CardDescription className="text-muted-foreground">
+          <CardDescription className="text-muted-foreground text-sm sm:text-base">
             {isLogin
               ? "Sign in to continue creating amazing images"
               : "Create your account and start generating"}

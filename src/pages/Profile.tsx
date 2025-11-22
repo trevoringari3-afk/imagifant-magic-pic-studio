@@ -38,7 +38,7 @@ const Profile = () => {
         .from("profiles")
         .select("*")
         .eq("user_id", user.id)
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
 
@@ -115,27 +115,27 @@ const Profile = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background pt-20">
+    <div className="min-h-screen bg-background pt-16 sm:pt-20">
       <Navbar />
       
-      <div className="container mx-auto px-4 py-8 max-w-2xl">
+      <div className="container mx-auto px-4 py-6 sm:py-8 max-w-2xl">
         <Card className="glass-card border-primary/30">
           <CardHeader>
-            <CardTitle className="text-3xl font-bold">Profile Settings</CardTitle>
+            <CardTitle className="text-2xl sm:text-3xl font-bold">Profile Settings</CardTitle>
             <CardDescription>Manage your account and preferences</CardDescription>
           </CardHeader>
           
           <CardContent className="space-y-6">
             <div className="flex flex-col items-center space-y-4">
-              <Avatar className="w-32 h-32 border-4 border-primary/30">
+              <Avatar className="w-24 h-24 sm:w-32 sm:h-32 border-4 border-primary/30">
                 <AvatarImage src={avatarUrl} alt={username} />
-                <AvatarFallback className="bg-primary/20 text-2xl">
-                  <User className="w-12 h-12" />
+                <AvatarFallback className="bg-primary/20 text-xl sm:text-2xl">
+                  <User className="w-10 h-10 sm:w-12 sm:h-12" />
                 </AvatarFallback>
               </Avatar>
               
               <Label htmlFor="avatar-upload" className="cursor-pointer">
-                <div className="flex items-center gap-2 px-4 py-2 bg-secondary hover:bg-secondary/80 rounded-md transition-colors">
+                <div className="flex items-center gap-2 px-4 py-2 bg-secondary hover:bg-secondary/80 rounded-md transition-colors text-sm sm:text-base">
                   {uploading ? (
                     <Loader2 className="w-4 h-4 animate-spin" />
                   ) : (

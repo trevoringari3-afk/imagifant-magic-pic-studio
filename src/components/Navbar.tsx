@@ -38,34 +38,35 @@ export const Navbar = () => {
 
   return (
     <nav className="fixed top-0 w-full z-50 glass-card border-b">
-      <div className="container mx-auto px-6 py-4">
+      <div className="container mx-auto px-4 sm:px-6 py-3 sm:py-4">
         <div className="flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2 group">
-            <Sparkles className="w-6 h-6 text-primary animate-glow-pulse" />
-            <span className="text-xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+            <Sparkles className="w-5 h-5 sm:w-6 sm:h-6 text-primary animate-glow-pulse" />
+            <span className="text-lg sm:text-xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
               imagifant
             </span>
           </Link>
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 sm:gap-4">
             <Button
               variant="ghost"
               size="icon"
               onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-              className="rounded-full"
+              className="rounded-full h-9 w-9 sm:h-10 sm:w-10"
+              aria-label="Toggle theme"
             >
               {theme === "dark" ? (
-                <Sun className="h-5 w-5" />
+                <Sun className="h-4 w-4 sm:h-5 sm:w-5" />
               ) : (
-                <Moon className="h-5 w-5" />
+                <Moon className="h-4 w-4 sm:h-5 sm:w-5" />
               )}
             </Button>
 
             {isAuthenticated ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="rounded-full">
-                    <User className="h-5 w-5" />
+                  <Button variant="ghost" size="icon" className="rounded-full h-9 w-9 sm:h-10 sm:w-10" aria-label="User menu">
+                    <User className="h-4 w-4 sm:h-5 sm:w-5" />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-48">
@@ -90,7 +91,7 @@ export const Navbar = () => {
               </DropdownMenu>
             ) : (
               <Link to="/auth">
-                <Button className="glow-button">Get Started</Button>
+                <Button className="glow-button text-sm sm:text-base px-3 py-2 sm:px-4 sm:py-2">Get Started</Button>
               </Link>
             )}
           </div>

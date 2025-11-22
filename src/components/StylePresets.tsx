@@ -54,20 +54,27 @@ interface StylePresetsProps {
 
 export const StylePresets = ({ selectedStyle, onStyleSelect }: StylePresetsProps) => {
   return (
-    <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-6 gap-3">
       {stylePresets.map((style) => (
         <Card
           key={style.id}
-          className={`style-preset-card border-2 ${
+          className={`style-preset-card border-2 transition-all ${
             selectedStyle === style.id
-              ? "selected border-primary"
-              : "border-border/50"
+              ? "selected border-primary bg-primary/5"
+              : "border-border/50 hover:border-border"
           }`}
           onClick={() => onStyleSelect(style.id)}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              onStyleSelect(style.id);
+            }
+          }}
         >
-          <CardContent className="p-4">
-            <h4 className="font-semibold mb-1">{style.name}</h4>
-            <p className="text-xs text-muted-foreground">{style.description}</p>
+          <CardContent className="p-3 sm:p-4">
+            <h4 className="font-semibold text-sm mb-1">{style.name}</h4>
+            <p className="text-xs text-muted-foreground line-clamp-2">{style.description}</p>
           </CardContent>
         </Card>
       ))}
