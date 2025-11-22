@@ -34,6 +34,9 @@ All colors MUST be HSL.
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
 
+    --success: 142 76% 36%;
+    --success-foreground: 0 0% 98%;
+
     --border: 240 5.9% 90%;
     --input: 240 5.9% 90%;
     --ring: 263 70% 50%;
@@ -73,6 +76,9 @@ All colors MUST be HSL.
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
 
+    --success: 142 76% 36%;
+    --success-foreground: 0 0% 98%;
+
     --border: 240 10% 15%;
     --input: 240 10% 15%;
     --ring: 263 70% 50%;
@@ -87,6 +93,10 @@ All colors MUST be HSL.
 @layer base {
   * {
     @apply border-border;
+  }
+
+  html {
+    scroll-behavior: smooth;
   }
 
   body {

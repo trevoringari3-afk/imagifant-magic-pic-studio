@@ -62,13 +62,13 @@ const Gallery = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background pt-20">
+    <div className="min-h-screen bg-background pt-16 sm:pt-20">
       <Navbar />
       
-      <div className="container mx-auto px-4 py-8">
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold mb-2 neon-text">Your Gallery</h1>
-          <p className="text-muted-foreground">
+      <div className="container mx-auto px-4 py-6 sm:py-8">
+        <div className="mb-6 sm:mb-8">
+          <h1 className="text-3xl sm:text-4xl font-bold mb-2 neon-text">Your Gallery</h1>
+          <p className="text-sm sm:text-base text-muted-foreground">
             View all your generated masterpieces
           </p>
         </div>
@@ -90,17 +90,17 @@ const Gallery = () => {
                 key={generation.id}
                 className="glass-card border-primary/30 overflow-hidden hover:border-primary/50 transition-colors animate-slide-in"
               >
-                <CardContent className="p-6">
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="flex-1">
-                      <p className="text-lg font-medium mb-2">{generation.prompt}</p>
-                      <div className="flex items-center gap-3 text-sm text-muted-foreground">
+                <CardContent className="p-4 sm:p-6">
+                  <div className="flex flex-col sm:flex-row items-start justify-between mb-4 gap-3">
+                    <div className="flex-1 w-full">
+                      <p className="text-base sm:text-lg font-medium mb-2 break-words">{generation.prompt}</p>
+                      <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-xs sm:text-sm text-muted-foreground">
                         <span className="flex items-center gap-1">
-                          <Calendar className="w-4 h-4" />
+                          <Calendar className="w-3 h-3 sm:w-4 sm:h-4" />
                           {new Date(generation.created_at).toLocaleDateString()}
                         </span>
                         {generation.style && (
-                          <Badge variant="secondary" className="capitalize">
+                          <Badge variant="secondary" className="capitalize text-xs">
                             {generation.style}
                           </Badge>
                         )}
@@ -112,16 +112,21 @@ const Gallery = () => {
                     {generation.image_urls.map((url, index) => (
                       <div
                         key={index}
-                        className="relative aspect-square rounded-lg overflow-hidden group cursor-pointer"
+                        className="relative aspect-square rounded-lg overflow-hidden group cursor-pointer hover:shadow-lg transition-shadow"
+                        onClick={() => window.open(url, "_blank")}
                       >
                         <img
                           src={url}
                           alt={`Generated image ${index + 1}`}
                           className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
-                          onClick={() => window.open(url, "_blank")}
+                          loading="lazy"
+                          onError={(e) => {
+                            e.currentTarget.src = "/placeholder.svg";
+                            console.error("Failed to load image:", url);
+                          }}
                         />
                         <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors duration-300 flex items-center justify-center">
-                          <span className="text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                          <span className="text-white text-sm font-medium opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                             View Full Size
                           </span>
                         </div>

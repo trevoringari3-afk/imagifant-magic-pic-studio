@@ -95,17 +95,17 @@ const Generate = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background pt-20">
+    <div className="min-h-screen bg-background pt-16 sm:pt-20">
       <Navbar />
       
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 py-6 sm:py-8">
         <div className="max-w-4xl mx-auto">
-          <div className="text-center mb-8">
-            <h1 className="text-4xl font-bold mb-2 neon-text flex items-center justify-center gap-2">
-              <Wand2 className="w-8 h-8" />
+          <div className="text-center mb-6 sm:mb-8">
+            <h1 className="text-3xl sm:text-4xl font-bold mb-2 neon-text flex items-center justify-center gap-2">
+              <Wand2 className="w-6 h-6 sm:w-8 sm:h-8" />
               Generate Images
             </h1>
-            <p className="text-muted-foreground">
+            <p className="text-sm sm:text-base text-muted-foreground">
               Transform your ideas into stunning visuals
             </p>
           </div>
@@ -122,13 +122,19 @@ const Generate = () => {
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="space-y-2">
-                <Label htmlFor="prompt">Your Prompt</Label>
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="prompt">Your Prompt</Label>
+                  <span className="text-xs text-muted-foreground">
+                    {prompt.length}/1000 characters
+                  </span>
+                </div>
                 <Textarea
                   id="prompt"
                   placeholder="A majestic lion standing on a cliff at sunset..."
                   value={prompt}
                   onChange={(e) => setPrompt(e.target.value)}
-                  className="min-h-[120px] bg-background/50 border-border/50"
+                  className="min-h-[120px] md:min-h-[140px] bg-background/50 border-border/50 resize-none"
+                  maxLength={1000}
                 />
               </div>
 
@@ -189,7 +195,7 @@ const Generate = () => {
                 <CardDescription>Click on any image to view full size</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {generatedImages.map((url, index) => (
                     <div 
                       key={index} 
@@ -200,9 +206,14 @@ const Generate = () => {
                         src={url}
                         alt={`Generated ${index + 1}`}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        loading="lazy"
+                        onError={(e) => {
+                          console.error("Failed to load generated image:", url);
+                          toast.error(`Failed to load image ${index + 1}`);
+                        }}
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4">
-                        <p className="text-white text-sm">View Full Size</p>
+                        <p className="text-white text-sm font-medium">View Full Size</p>
                       </div>
                     </div>
                   ))}
