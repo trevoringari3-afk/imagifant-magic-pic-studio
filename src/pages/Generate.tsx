@@ -50,14 +50,23 @@ const Generate = () => {
         : prompt;
 
       for (let i = 0; i < count; i++) {
+        console.log(`Generating image ${i + 1} of ${count}...`);
+        
         const { data, error } = await supabase.functions.invoke("generate-image", {
           body: { prompt: finalPrompt },
         });
 
-        if (error) throw error;
+        if (error) {
+          console.error(`Error generating image ${i + 1}:`, error);
+          throw error;
+        }
 
-        if (data?.imageUrl) {
-          imageUrls.push(data.imageUrl);
+        if (data?.image) {
+          console.log(`Image ${i + 1} generated successfully`);
+          imageUrls.push(data.image);
+        } else {
+          console.error(`No image returned for generation ${i + 1}`, data);
+          throw new Error(`Failed to generate image ${i + 1}`);
         }
       }
 
