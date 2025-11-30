@@ -5,9 +5,10 @@ import Navbar from "@/components/Navbar";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Loader2, Calendar, Sparkles, Download, Edit } from "lucide-react";
+import { Loader2, Calendar, Sparkles, Download, Edit, Archive } from "lucide-react";
 import { toast } from "sonner";
 import { ImageEditor } from "@/components/ImageEditor";
+import JSZip from "jszip";
 
 interface Generation {
   id: string;
@@ -72,6 +73,53 @@ const Gallery = () => {
     }
   };
 
+  const handleBatchDownload = async (generation: Generation) => {
+    const toastId = toast.loading(`Preparing ZIP file with ${generation.image_urls.length} images...`);
+    
+    try {
+      const zip = new JSZip();
+      const folder = zip.folder(`imagifant-${generation.id}`);
+      
+      if (!folder) {
+        throw new Error("Failed to create ZIP folder");
+      }
+
+      // Download all images and add to ZIP
+      const downloadPromises = generation.image_urls.map(async (url, index) => {
+        try {
+          const response = await fetch(url);
+          const blob = await response.blob();
+          const fileName = `image-${index + 1}.png`;
+          folder.file(fileName, blob);
+          return true;
+        } catch (error) {
+          console.error(`Failed to download image ${index + 1}:`, error);
+          return false;
+        }
+      });
+
+      await Promise.all(downloadPromises);
+
+      // Generate ZIP file
+      const zipBlob = await zip.generateAsync({ type: "blob" });
+      
+      // Download ZIP
+      const url = window.URL.createObjectURL(zipBlob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `imagifant-${generation.id}-${Date.now()}.zip`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+
+      toast.success(`Successfully downloaded ${generation.image_urls.length} images as ZIP!`, { id: toastId });
+    } catch (error) {
+      console.error("Batch download error:", error);
+      toast.error("Failed to create ZIP file", { id: toastId });
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-background">
@@ -128,6 +176,15 @@ const Gallery = () => {
                         )}
                       </div>
                     </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleBatchDownload(generation)}
+                      className="shrink-0"
+                    >
+                      <Archive className="w-4 h-4 mr-2" />
+                      Download All ({generation.image_urls.length})
+                    </Button>
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
