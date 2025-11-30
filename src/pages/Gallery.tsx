@@ -4,8 +4,10 @@ import { supabase } from "@/integrations/supabase/client";
 import Navbar from "@/components/Navbar";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Calendar, Sparkles } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Loader2, Calendar, Sparkles, Download, Edit } from "lucide-react";
 import { toast } from "sonner";
+import { ImageEditor } from "@/components/ImageEditor";
 
 interface Generation {
   id: string;
@@ -19,6 +21,7 @@ const Gallery = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [generations, setGenerations] = useState<Generation[]>([]);
+  const [editingImage, setEditingImage] = useState<string | null>(null);
 
   useEffect(() => {
     loadGenerations();
@@ -47,6 +50,25 @@ const Gallery = () => {
       console.error("Error loading generations:", error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleDownload = async (imageUrl: string, generationId: string, index: number) => {
+    try {
+      const response = await fetch(imageUrl);
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `imagifant-${generationId}-${index + 1}.png`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+      toast.success("Image downloaded successfully!");
+    } catch (error) {
+      console.error("Download error:", error);
+      toast.error("Failed to download image");
     }
   };
 
@@ -112,23 +134,43 @@ const Gallery = () => {
                     {generation.image_urls.map((url, index) => (
                       <div
                         key={index}
-                        className="relative aspect-square rounded-lg overflow-hidden group cursor-pointer hover:shadow-lg transition-shadow"
-                        onClick={() => window.open(url, "_blank")}
+                        className="relative aspect-square rounded-lg overflow-hidden group hover:shadow-lg transition-shadow"
                       >
                         <img
                           src={url}
                           alt={`Generated image ${index + 1}`}
-                          className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+                          className="w-full h-full object-cover transition-transform duration-300"
                           loading="lazy"
                           onError={(e) => {
                             e.currentTarget.src = "/placeholder.svg";
                             console.error("Failed to load image:", url);
                           }}
                         />
-                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors duration-300 flex items-center justify-center">
-                          <span className="text-white text-sm font-medium opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                            View Full Size
-                          </span>
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col items-center justify-end p-3 gap-2">
+                          <div className="flex gap-2">
+                            <Button
+                              size="sm"
+                              variant="secondary"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setEditingImage(url);
+                              }}
+                            >
+                              <Edit className="w-3 h-3 mr-1" />
+                              Edit
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="secondary"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDownload(url, generation.id, index);
+                              }}
+                            >
+                              <Download className="w-3 h-3 mr-1" />
+                              Download
+                            </Button>
+                          </div>
                         </div>
                       </div>
                     ))}
@@ -139,6 +181,12 @@ const Gallery = () => {
           </div>
         )}
       </div>
+
+      <ImageEditor
+        imageUrl={editingImage || ""}
+        isOpen={!!editingImage}
+        onClose={() => setEditingImage(null)}
+      />
     </div>
   );
 };

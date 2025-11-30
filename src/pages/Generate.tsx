@@ -5,11 +5,13 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Progress } from "@/components/ui/progress";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Navbar } from "@/components/Navbar";
-import { Loader2, Sparkles, Wand2 } from "lucide-react";
+import { Loader2, Sparkles, Wand2, Download, Edit } from "lucide-react";
 import { StylePresets, stylePresets } from "@/components/StylePresets";
+import { ImageEditor } from "@/components/ImageEditor";
 
 const Generate = () => {
   const navigate = useNavigate();
@@ -19,6 +21,9 @@ const Generate = () => {
   const [loading, setLoading] = useState(false);
   const [generatedImages, setGeneratedImages] = useState<string[]>([]);
   const [userId, setUserId] = useState("");
+  const [currentProgress, setCurrentProgress] = useState(0);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [editingImage, setEditingImage] = useState<string | null>(null);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -38,6 +43,8 @@ const Generate = () => {
 
     setLoading(true);
     setGeneratedImages([]);
+    setCurrentProgress(0);
+    setCurrentImageIndex(0);
 
     try {
       const count = parseInt(numImages);
@@ -50,6 +57,8 @@ const Generate = () => {
         : prompt;
 
       for (let i = 0; i < count; i++) {
+        setCurrentImageIndex(i + 1);
+        setCurrentProgress(((i) / count) * 100);
         console.log(`Generating image ${i + 1} of ${count}...`);
         
         const { data, error } = await supabase.functions.invoke("generate-image", {
@@ -64,6 +73,7 @@ const Generate = () => {
         if (data?.image) {
           console.log(`Image ${i + 1} generated successfully`);
           imageUrls.push(data.image);
+          setCurrentProgress(((i + 1) / count) * 100);
         } else {
           console.error(`No image returned for generation ${i + 1}`, data);
           throw new Error(`Failed to generate image ${i + 1}`);
@@ -91,6 +101,27 @@ const Generate = () => {
       toast.error(error.message || "Failed to generate images");
     } finally {
       setLoading(false);
+      setCurrentProgress(0);
+      setCurrentImageIndex(0);
+    }
+  };
+
+  const handleDownload = async (imageUrl: string, index: number) => {
+    try {
+      const response = await fetch(imageUrl);
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `imagifant-${Date.now()}-${index + 1}.png`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+      toast.success("Image downloaded successfully!");
+    } catch (error) {
+      console.error("Download error:", error);
+      toast.error("Failed to download image");
     }
   };
 
@@ -164,6 +195,18 @@ const Generate = () => {
                 </RadioGroup>
               </div>
 
+              {loading && (
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-muted-foreground">
+                      Generating image {currentImageIndex} of {numImages}...
+                    </span>
+                    <span className="font-medium">{Math.round(currentProgress)}%</span>
+                  </div>
+                  <Progress value={currentProgress} className="h-2" />
+                </div>
+              )}
+
               <Button
                 onClick={handleGenerate}
                 disabled={loading}
@@ -195,25 +238,47 @@ const Generate = () => {
                 <CardDescription>Click on any image to view full size</CardDescription>
               </CardHeader>
               <CardContent>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {generatedImages.map((url, index) => (
                     <div 
                       key={index} 
-                      className="relative aspect-square rounded-lg overflow-hidden group cursor-pointer hover:shadow-xl transition-all duration-300"
-                      onClick={() => window.open(url, "_blank")}
+                      className="relative aspect-square rounded-lg overflow-hidden group hover:shadow-xl transition-all duration-300"
                     >
                       <img
                         src={url}
                         alt={`Generated ${index + 1}`}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        className="w-full h-full object-cover transition-transform duration-300"
                         loading="lazy"
                         onError={(e) => {
                           console.error("Failed to load generated image:", url);
                           toast.error(`Failed to load image ${index + 1}`);
                         }}
                       />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4">
-                        <p className="text-white text-sm font-medium">View Full Size</p>
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col items-center justify-end p-4 gap-2">
+                        <div className="flex gap-2">
+                          <Button
+                            size="sm"
+                            variant="secondary"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setEditingImage(url);
+                            }}
+                          >
+                            <Edit className="w-4 h-4 mr-1" />
+                            Edit
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="secondary"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDownload(url, index);
+                            }}
+                          >
+                            <Download className="w-4 h-4 mr-1" />
+                            Download
+                          </Button>
+                        </div>
                       </div>
                     </div>
                   ))}
@@ -223,6 +288,12 @@ const Generate = () => {
           )}
         </div>
       </div>
+
+      <ImageEditor
+        imageUrl={editingImage || ""}
+        isOpen={!!editingImage}
+        onClose={() => setEditingImage(null)}
+      />
     </div>
   );
 };
