@@ -9,7 +9,7 @@ import { Progress } from "@/components/ui/progress";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Navbar } from "@/components/Navbar";
-import { Loader2, Sparkles, Wand2, Download, Edit } from "lucide-react";
+import { Loader2, Sparkles, Wand2, Download, Edit, Heart } from "lucide-react";
 import { StylePresets, stylePresets } from "@/components/StylePresets";
 import { ImageEditor } from "@/components/ImageEditor";
 
@@ -24,6 +24,8 @@ const Generate = () => {
   const [currentProgress, setCurrentProgress] = useState(0);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [editingImage, setEditingImage] = useState<string | null>(null);
+  const [currentGenerationId, setCurrentGenerationId] = useState<string | null>(null);
+  const [isFavorite, setIsFavorite] = useState(false);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -81,17 +83,22 @@ const Generate = () => {
       }
 
       // Save to database
-      const { error: dbError } = await supabase
+      const { data: insertData, error: dbError } = await supabase
         .from("generations")
         .insert({
           user_id: userId,
           prompt: prompt,
           style: selectedStyle !== "none" ? selectedStyle : null,
           image_urls: imageUrls,
-        });
+        })
+        .select()
+        .single();
 
       if (dbError) {
         console.error("Error saving to database:", dbError);
+      } else if (insertData) {
+        setCurrentGenerationId(insertData.id);
+        setIsFavorite(insertData.is_favorite || false);
       }
 
       setGeneratedImages(imageUrls);
@@ -103,6 +110,28 @@ const Generate = () => {
       setLoading(false);
       setCurrentProgress(0);
       setCurrentImageIndex(0);
+    }
+  };
+
+  const toggleCurrentGenerationFavorite = async () => {
+    if (!currentGenerationId) return;
+
+    try {
+      const newStatus = !isFavorite;
+      const { error } = await supabase
+        .from("generations")
+        .update({ is_favorite: newStatus })
+        .eq("id", currentGenerationId);
+
+      if (error) throw error;
+
+      setIsFavorite(newStatus);
+      toast.success(
+        newStatus ? "Added to favorites!" : "Removed from favorites"
+      );
+    } catch (error) {
+      console.error("Error toggling favorite:", error);
+      toast.error("Failed to update favorite status");
     }
   };
 
@@ -231,11 +260,23 @@ const Generate = () => {
           {generatedImages.length > 0 && (
             <Card className="glass-card border-primary/30 animate-slide-in">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Sparkles className="w-5 h-5 text-primary" />
-                  Your Creations
-                </CardTitle>
-                <CardDescription>Click on any image to view full size</CardDescription>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Sparkles className="w-5 h-5 text-primary" />
+                    <CardTitle>Your Creations</CardTitle>
+                  </div>
+                  <Button
+                    variant={isFavorite ? "default" : "outline"}
+                    size="sm"
+                    onClick={toggleCurrentGenerationFavorite}
+                  >
+                    <Heart
+                      className={`w-4 h-4 mr-2 ${isFavorite ? "fill-current" : ""}`}
+                    />
+                    {isFavorite ? "Favorited" : "Favorite"}
+                  </Button>
+                </div>
+                <CardDescription>Click on any image to edit or download</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

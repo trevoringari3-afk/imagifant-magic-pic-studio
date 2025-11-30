@@ -19,6 +19,7 @@ export type Database = {
           created_at: string
           id: string
           image_urls: string[]
+          is_favorite: boolean
           prompt: string
           reference_image_url: string | null
           style: string | null
@@ -28,6 +29,7 @@ export type Database = {
           created_at?: string
           id?: string
           image_urls: string[]
+          is_favorite?: boolean
           prompt: string
           reference_image_url?: string | null
           style?: string | null
@@ -37,6 +39,7 @@ export type Database = {
           created_at?: string
           id?: string
           image_urls?: string[]
+          is_favorite?: boolean
           prompt?: string
           reference_image_url?: string | null
           style?: string | null

@@ -5,10 +5,16 @@ import Navbar from "@/components/Navbar";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Loader2, Calendar, Sparkles, Download, Edit, Archive } from "lucide-react";
+import { Loader2, Calendar, Sparkles, Download, Edit, Archive, Heart, Filter } from "lucide-react";
 import { toast } from "sonner";
 import { ImageEditor } from "@/components/ImageEditor";
 import JSZip from "jszip";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface Generation {
   id: string;
@@ -16,6 +22,7 @@ interface Generation {
   style: string | null;
   image_urls: string[];
   created_at: string;
+  is_favorite: boolean;
 }
 
 const Gallery = () => {
@@ -23,6 +30,7 @@ const Gallery = () => {
   const [loading, setLoading] = useState(true);
   const [generations, setGenerations] = useState<Generation[]>([]);
   const [editingImage, setEditingImage] = useState<string | null>(null);
+  const [filterMode, setFilterMode] = useState<"all" | "favorites">("all");
 
   useEffect(() => {
     loadGenerations();
@@ -120,6 +128,35 @@ const Gallery = () => {
     }
   };
 
+  const toggleFavorite = async (generationId: string, currentStatus: boolean) => {
+    try {
+      const { error } = await supabase
+        .from("generations")
+        .update({ is_favorite: !currentStatus })
+        .eq("id", generationId);
+
+      if (error) throw error;
+
+      // Update local state
+      setGenerations((prev) =>
+        prev.map((gen) =>
+          gen.id === generationId ? { ...gen, is_favorite: !currentStatus } : gen
+        )
+      );
+
+      toast.success(
+        !currentStatus ? "Added to favorites!" : "Removed from favorites"
+      );
+    } catch (error) {
+      console.error("Error toggling favorite:", error);
+      toast.error("Failed to update favorite status");
+    }
+  };
+
+  const filteredGenerations = filterMode === "favorites" 
+    ? generations.filter((gen) => gen.is_favorite) 
+    : generations;
+
   if (loading) {
     return (
       <div className="min-h-screen bg-background">
@@ -136,26 +173,57 @@ const Gallery = () => {
       <Navbar />
       
       <div className="container mx-auto px-4 py-6 sm:py-8">
-        <div className="mb-6 sm:mb-8">
-          <h1 className="text-3xl sm:text-4xl font-bold mb-2 neon-text">Your Gallery</h1>
-          <p className="text-sm sm:text-base text-muted-foreground">
-            View all your generated masterpieces
-          </p>
+        <div className="mb-6 sm:mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h1 className="text-3xl sm:text-4xl font-bold mb-2 neon-text">Your Gallery</h1>
+            <p className="text-sm sm:text-base text-muted-foreground">
+              View all your generated masterpieces
+            </p>
+          </div>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="sm">
+                <Filter className="w-4 h-4 mr-2" />
+                {filterMode === "all" ? "All Images" : "Favorites"}
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => setFilterMode("all")}>
+                All Images ({generations.length})
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setFilterMode("favorites")}>
+                <Heart className="w-4 h-4 mr-2 fill-primary text-primary" />
+                Favorites ({generations.filter((g) => g.is_favorite).length})
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
 
-        {generations.length === 0 ? (
+        {filteredGenerations.length === 0 ? (
           <Card className="glass-card border-primary/30 text-center py-12">
             <CardContent>
-              <Sparkles className="w-16 h-16 mx-auto mb-4 text-primary opacity-50" />
-              <h3 className="text-xl font-semibold mb-2">No generations yet</h3>
-              <p className="text-muted-foreground mb-4">
-                Start creating amazing images to see them here
-              </p>
+              {filterMode === "favorites" ? (
+                <>
+                  <Heart className="w-16 h-16 mx-auto mb-4 text-primary opacity-50" />
+                  <h3 className="text-xl font-semibold mb-2">No favorites yet</h3>
+                  <p className="text-muted-foreground mb-4">
+                    Mark your best generations as favorites to see them here
+                  </p>
+                </>
+              ) : (
+                <>
+                  <Sparkles className="w-16 h-16 mx-auto mb-4 text-primary opacity-50" />
+                  <h3 className="text-xl font-semibold mb-2">No generations yet</h3>
+                  <p className="text-muted-foreground mb-4">
+                    Start creating amazing images to see them here
+                  </p>
+                </>
+              )}
             </CardContent>
           </Card>
         ) : (
           <div className="space-y-6">
-            {generations.map((generation) => (
+            {filteredGenerations.map((generation) => (
               <Card
                 key={generation.id}
                 className="glass-card border-primary/30 overflow-hidden hover:border-primary/50 transition-colors animate-slide-in"
@@ -176,15 +244,28 @@ const Gallery = () => {
                         )}
                       </div>
                     </div>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleBatchDownload(generation)}
-                      className="shrink-0"
-                    >
-                      <Archive className="w-4 h-4 mr-2" />
-                      Download All ({generation.image_urls.length})
-                    </Button>
+                    <div className="flex gap-2 shrink-0">
+                      <Button
+                        variant={generation.is_favorite ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => toggleFavorite(generation.id, generation.is_favorite)}
+                      >
+                        <Heart
+                          className={`w-4 h-4 mr-2 ${
+                            generation.is_favorite ? "fill-current" : ""
+                          }`}
+                        />
+                        {generation.is_favorite ? "Favorited" : "Favorite"}
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleBatchDownload(generation)}
+                      >
+                        <Archive className="w-4 h-4 mr-2" />
+                        Download All ({generation.image_urls.length})
+                      </Button>
+                    </div>
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
