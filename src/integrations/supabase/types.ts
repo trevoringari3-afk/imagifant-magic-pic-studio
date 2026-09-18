@@ -10,16 +10,89 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "13.0.5"
+    PostgrestVersion: "14.5"
   }
   public: {
     Tables: {
+      collection_items: {
+        Row: {
+          collection_id: string
+          created_at: string
+          generation_id: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          collection_id: string
+          created_at?: string
+          generation_id: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          collection_id?: string
+          created_at?: string
+          generation_id?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "collection_items_collection_id_fkey"
+            columns: ["collection_id"]
+            isOneToOne: false
+            referencedRelation: "collections"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "collection_items_generation_id_fkey"
+            columns: ["generation_id"]
+            isOneToOne: false
+            referencedRelation: "generations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      collections: {
+        Row: {
+          cover_image_url: string | null
+          created_at: string
+          description: string | null
+          id: string
+          is_public: boolean
+          name: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          cover_image_url?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_public?: boolean
+          name: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          cover_image_url?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_public?: boolean
+          name?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       generations: {
         Row: {
           created_at: string
           id: string
           image_urls: string[]
           is_favorite: boolean
+          is_public: boolean
           prompt: string
           reference_image_url: string | null
           style: string | null
@@ -30,6 +103,7 @@ export type Database = {
           id?: string
           image_urls: string[]
           is_favorite?: boolean
+          is_public?: boolean
           prompt: string
           reference_image_url?: string | null
           style?: string | null
@@ -40,6 +114,7 @@ export type Database = {
           id?: string
           image_urls?: string[]
           is_favorite?: boolean
+          is_public?: boolean
           prompt?: string
           reference_image_url?: string | null
           style?: string | null
